@@ -64,6 +64,10 @@
     <Compile Include="Entities\Type.cs" />
     <Compile Include="Entities\User.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Migrations\201805071328110_init.cs" />
+    <Compile Include="Migrations\201805071328110_init.Designer.cs">
+      <DependentUpon>201805071328110_init.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -76,6 +80,11 @@
       <Project>{E6A8CFA6-2EC9-4115-B033-7C5F7ECF53DA}</Project>
       <Name>Documentation.Ground</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201805071328110_init.resx">
+      <DependentUpon>201805071328110_init.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -13,7 +13,7 @@ namespace Documentation.Data.DAL.Intefraces
         int Insert(T entity);
         int Update(T entity, object key);
         int ExecuteSQL(string sqlQuery, object[] parameters);
-        int Delete(object key, bool physiaclDelete);
+        int Delete(object key, bool physiaclDelete = true);
         IQueryable<T> GetAll(RowStatus rowstatus, params Expression<Func<T, object>>[] navigationProperties);
         T GetById(object id);
         IQueryable<T> FindBy(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] navigationProperties);

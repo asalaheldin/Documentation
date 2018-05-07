@@ -12,6 +12,7 @@ using Documentation.Web.Models;
 using Documentation.Data.DAL.Intefraces;
 using Documentation.Data.Entities;
 using Documentation.Web.Helper;
+using Documentation.Web.Identity;
 
 namespace Documentation.Web.Controllers
 {
@@ -22,9 +23,9 @@ namespace Documentation.Web.Controllers
         private ApplicationUserManager _userManager;
         private readonly Lazy<IRepository<User>> _userRepo;
 
-        //public AccountController()
-        //{
-        //}
+        public AccountController()
+        {
+        }
 
         public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, Lazy<IRepository<User>> userRepo)
         {
@@ -50,7 +51,7 @@ namespace Documentation.Web.Controllers
         {
             get
             {
-                return _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+                return _userManager ?? new ApplicationUserManager(new DocumentationUserStore(DocumentationContainerHelper.Container.GetInstance<IRepository<User>>()));
             }
             private set
             {
@@ -78,14 +79,6 @@ namespace Documentation.Web.Controllers
             {
                 return View(model);
             }
-
-            var hashPass = SecurityHelper.EncryptPassword(model.Password);
-            var user = UserRepo.FindBy(x => x.UserName == model.Email && x.Password == hashPass).FirstOrDefault();
-            UserManager.ClaimsIdentityFactory = new ApplicationClaimsIdentityFactory()
-            {
-                UserIdValue = user?.Id.ToString() ?? "",
-                UserNameValue = user?.UserName ?? "",
-            };
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
             var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
@@ -164,7 +157,7 @@ namespace Documentation.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {

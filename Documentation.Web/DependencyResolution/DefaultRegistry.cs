@@ -17,10 +17,14 @@
 
 namespace Documentation.Web.DependencyResolution {
     using Documentation.Data.DependencyResolution;
+    using Documentation.Web.Identity;
+    using Documentation.Web.Models;
+    using Microsoft.Owin.Security;
     using StructureMap;
     using StructureMap.Configuration.DSL;
     using StructureMap.Graph;
-	
+    using System.Web;
+
     public class DefaultRegistry : Registry {
         #region Constructors and Destructors
 
@@ -31,7 +35,8 @@ namespace Documentation.Web.DependencyResolution {
                     scan.WithDefaultConventions();
 					scan.With(new ControllerConvention());
                 });
-            //For<IExample>().Use<Example>();
+            For<ICustomStore<ApplicationUser>>().Use<DocumentationUserStore>();
+            For<IAuthenticationManager>().Use(() => HttpContext.Current.GetOwinContext().Authentication);
             IncludeRegistry<DataRegistry>();
         }
 

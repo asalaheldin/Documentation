@@ -14,6 +14,7 @@ using Documentation.Web.Models;
 using Documentation.Data.DAL.Intefraces;
 using Documentation.Data.Entities;
 using Documentation.Web.Helper;
+using Documentation.Web.Identity;
 
 namespace Documentation.Web
 {
@@ -38,14 +39,16 @@ namespace Documentation.Web
     // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
     public class ApplicationUserManager : UserManager<ApplicationUser>
     {
-        public ApplicationUserManager(IUserStore<ApplicationUser> store)
+        private readonly ICustomStore<ApplicationUser> _store;
+        public ApplicationUserManager(ICustomStore<ApplicationUser> store)
             : base(store)
         {
+            _store = store;
         }
 
         public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context) 
         {
-            var manager = new ApplicationUserManager(new UserStore<ApplicationUser>(context.Get<ApplicationDbContext>()));
+            var manager = new ApplicationUserManager(new DocumentationUserStore(DocumentationContainerHelper.Container.GetInstance<IRepository<User>>()));
             // Configure validation logic for usernames
             manager.UserValidator = new UserValidator<ApplicationUser>(manager)
             {
@@ -89,14 +92,82 @@ namespace Documentation.Web
             }
             return manager;
         }
+        public async Task<ApplicationUser> Login(string userName, string password)
+        {
+            return await _store.FindByPasswordAsync(userName, password);
+        }
+        public override async Task<IdentityResult> CreateAsync(ApplicationUser user, string password)
+        {
+            var dbUser = await _store.FindByNameAsync(user.Email);
+            if (dbUser != null)
+                return IdentityResult.Failed(new string[] { "This email is already registered!" });
+            user.PasswordHash = SecurityHelper.EncryptPassword(password);
+            await _store.CreateAsync(user);
+            return IdentityResult.Success;
+        }
+        public override async Task<IdentityResult> UpdateAsync(ApplicationUser user)
+        {
+            await _store.UpdateAsync(user);
+            return IdentityResult.Success;
+        }
+        public override async Task<ApplicationUser> FindAsync(string userName, string password)
+        {
+            var user = await _store.FindByNameAsync(userName);
+            if (user != null && user.PasswordHash == password)
+                return user;
+            return null;
+        }
+        public override async Task<ApplicationUser> FindByIdAsync(string userId)
+        {
+            return await _store.FindByIdAsync(userId);
+        }
+        public override async Task<ApplicationUser> FindByEmailAsync(string email)
+        {
+            return await _store.FindByNameAsync(email);
+        }
+
+        public override async Task<IdentityResult> ChangePasswordAsync(string userId, string currentPassword, string newPassword)
+        {
+            if (Guid.TryParse(userId, out Guid Id))
+            {
+                return await _store.UpdatePassword(Id, currentPassword, newPassword);
+            }
+            return IdentityResult.Failed(new string[] { "problem retreving user data!" });
+        }
+
+        public override async Task<IdentityResult> AddPasswordAsync(string userId, string password)
+        {
+            if (Guid.TryParse(userId, out Guid Id))
+            {
+                return await _store.AddPassword(Id, password);
+            }
+            return IdentityResult.Failed(new string[] { "problem retreving user data!" }); ;
+        }
+
+
+        public override async Task<ClaimsIdentity> CreateIdentityAsync(ApplicationUser user, string authenticationType)
+        {
+            var claim = await base.CreateIdentityAsync(user, authenticationType);
+            claim.AddClaim(new Claim("UserId", user.Id.ToString()));
+            claim.AddClaim(new Claim("UserName", user.Email));
+            claim.AddClaim(new Claim("FirstName", user.FirstName ?? ""));
+            claim.AddClaim(new Claim("LastName", user.LastName ?? ""));
+            claim.AddClaim(new Claim("FullName", user.FullName ?? ""));
+            return claim;
+        }
     }
 
     // Configure the application sign-in manager which is used in this application.
     public class ApplicationSignInManager : SignInManager<ApplicationUser, string>
     {
+        private readonly ApplicationUserManager _userManager;
+        private readonly IAuthenticationManager _authenticationManager;
         public ApplicationSignInManager(ApplicationUserManager userManager, IAuthenticationManager authenticationManager)
             : base(userManager, authenticationManager)
         {
+            _userManager = userManager;
+            _authenticationManager = authenticationManager;
+
         }
 
         public override Task<ClaimsIdentity> CreateUserIdentityAsync(ApplicationUser user)
@@ -106,7 +177,31 @@ namespace Documentation.Web
 
         public static ApplicationSignInManager Create(IdentityFactoryOptions<ApplicationSignInManager> options, IOwinContext context)
         {
-            return new ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(), context.Authentication);
+            return new ApplicationSignInManager(new ApplicationUserManager(new DocumentationUserStore(DocumentationContainerHelper.Container.GetInstance<IRepository<User>>())), context.Authentication);
+        }
+        public override async Task<SignInStatus> PasswordSignInAsync(string userName, string password, bool isPersistent, bool shouldLockout)
+        {
+            var user = await _userManager.Login(userName, SecurityHelper.EncryptPassword(password));
+            if (user != null)
+            {
+                _authenticationManager.SignOut(DefaultAuthenticationTypes.ExternalCookie);
+                var identity = await _userManager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
+                _authenticationManager.SignIn(new AuthenticationProperties() { IsPersistent = isPersistent, ExpiresUtc = DateTime.UtcNow.AddDays(14) }, identity);
+
+                return SignInStatus.Success;
+            }
+            return SignInStatus.Failure;
+        }
+        public override async Task SignInAsync(ApplicationUser user, bool isPersistent, bool rememberBrowser)
+        {
+            var dbUser = await _userManager.Login(user.Email, user.PasswordHash);
+            if (dbUser != null)
+            {
+                _authenticationManager.SignOut(DefaultAuthenticationTypes.ExternalCookie);
+                var identity = await _userManager.CreateIdentityAsync(dbUser, DefaultAuthenticationTypes.ApplicationCookie);
+                _authenticationManager.SignIn(new AuthenticationProperties() { IsPersistent = isPersistent, ExpiresUtc = DateTime.UtcNow.AddDays(14) }, identity);
+
+            }
         }
     }
     public class ApplicationClaimsIdentityFactory : ClaimsIdentityFactory<ApplicationUser>
