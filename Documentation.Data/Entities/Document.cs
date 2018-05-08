@@ -18,14 +18,19 @@ namespace Documentation.Data.Entities
         [Required]
         public string Subject { get; set; }
         [Required]
+        public int TypeId { get; set; }
         public Type Type { get; set; }
         [Required]
         [LessEqualCurrentDate]
+        [DisplayFormat(DataFormatString = "{0:M/d/yyy}", ApplyFormatInEditMode = true)]
         public DateTime Date { get; set; }
         [Required]
-        [DisplayFormat(DataFormatString = "{00/0000}")]
+        //[DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{00/0000}")]
+        [RegularExpression("(0[1-9]|[1-9]{2})/20[0-9]{2}$", ErrorMessage = "Format should be as 00/0000")]
         public string SerialNumber { get; set; }
         public string Remarks { get; set; }
+        public string FileExtension { get; set; }
+        public string FileName { get; set; }
 
     }
 }

@@ -64,8 +64,12 @@ namespace Documentation.Web.Controllers
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
-            ViewBag.ReturnUrl = returnUrl;
-            return View();
+            if (!Request.IsAuthenticated)
+            {
+                ViewBag.ReturnUrl = returnUrl;
+                return View();
+            }
+            return Redirect("/");
         }
 
         //

@@ -15,8 +15,10 @@ namespace Documentation.Data.Entities
         }
         public DateTime CreatedOn { get; set; }
         public DateTime UpdatedOn { get; set; }
-        public Guid Creator { get; set; }
-        public Guid Updator { get; set; }
+        public Guid CreatorId { get; set; }
+        public User Creator { get; set; }
+        public Guid UpdatorId { get; set; }
+        public User Updator { get; set; }
         public bool IsDeleted { get; set; }
     }
 }

@@ -1,0 +1,96 @@
+﻿@model Documentation.Data.Entities.Document
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Edit</h2>
+
+
+@using (Html.BeginForm("Edit", "Document", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+    <h4>Document</h4>
+    <hr />
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.Id)
+    @Html.HiddenFor(model => model.FileName)
+    @Html.HiddenFor(model => model.FileExtension)
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Subject, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Subject, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Subject, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Date, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Date, "{0:M/d/yyyy}", new { htmlAttributes = new { @class = "form-control datepicker" } })
+            @Html.ValidationMessageFor(model => model.Date, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.SerialNumber, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.SerialNumber, new { htmlAttributes = new { @class = "form-control", @placeHolder = "00/0000" } })
+            @Html.ValidationMessageFor(model => model.SerialNumber, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Remarks, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Remarks, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Remarks, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-md-2">Type</label>
+        <div class="col-md-10">
+            @Html.DropDownListFor(model => model.TypeId, new SelectList(Documentation.Web.Helper.Lookup.GetTypes(), "Id", "Name", Model.TypeId), "Select", new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.TypeId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @if (!string.IsNullOrEmpty(Model.FileName))
+        {
+            <label class="control-label col-md-2">Document</label>
+            <div class="col-md-10">
+                <label class="control-label col-md-2">@Model.FileName</label>
+                <input type="file" name="img1" />
+            </div>
+        }
+        else
+        {
+            <label class="control-label col-md-2">Document</label>
+            <div class="col-md-10">
+                @*<button id="upload_btn">Upload Document</button>*@
+                <input type="file" name="Doc" />
+            </div>
+        }
+
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="Save" class="btn btn-default" />
+        </div>
+    </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/Scripts/custom.js")
+}

@@ -14,7 +14,7 @@ namespace Documentation.Data.DAL.Intefraces
         int Update(T entity, object key);
         int ExecuteSQL(string sqlQuery, object[] parameters);
         int Delete(object key, bool physiaclDelete = true);
-        IQueryable<T> GetAll(RowStatus rowstatus, params Expression<Func<T, object>>[] navigationProperties);
+        IQueryable<T> GetAll(RowStatus rowstatus = RowStatus.EXISTS, params Expression<Func<T, object>>[] navigationProperties);
         T GetById(object id);
         IQueryable<T> FindBy(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] navigationProperties);
     }

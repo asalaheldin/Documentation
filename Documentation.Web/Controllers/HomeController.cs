@@ -11,7 +11,7 @@ namespace Documentation.Web.Controllers
     {
         public ActionResult Index()
         {
-            return View();
+            return RedirectToAction("Index", "Document");
         }
 
         public ActionResult About()

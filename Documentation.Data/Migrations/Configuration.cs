@@ -19,17 +19,6 @@ namespace Documentation.Data.Migrations
 
             //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
             //  to avoid creating duplicate seed data.
-            context.Users.AddOrUpdate(p => p.Id,
-                new User()
-                {
-                    UserName = "ahassan@gmail.com",
-                    Password = @"á
-Ü9IºY«¾VàWòˆ > ",
-                    FirstName = "Amr",
-                    LastName = "Salah Eldin"
-
-                });
-
             context.Types.AddOrUpdate(p => p.Id,
                 new Entities.Type()
                 {
@@ -38,7 +27,7 @@ namespace Documentation.Data.Migrations
                 },
                 new Entities.Type()
                 {
-                    Id = 1,
+                    Id = 2,
                     Name = "Outgoing"
                 });
         }

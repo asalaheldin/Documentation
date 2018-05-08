@@ -23,6 +23,22 @@ namespace Documentation.Data.DAL.Implementation
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+            modelBuilder.Entity<Document>()
+                        .HasRequired(n => n.Type)
+                        .WithMany()
+                .HasForeignKey(n => n.TypeId)
+                        .WillCascadeOnDelete(false);
+            modelBuilder.Entity<Document>()
+                           .HasRequired(n => n.Creator)
+                           .WithMany()
+                    .HasForeignKey(n => n.CreatorId)
+                           .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<Document>()
+                        .HasRequired(n => n.Updator)
+                        .WithMany()
+                .HasForeignKey(n => n.UpdatorId)
+                        .WillCascadeOnDelete(false);
             base.OnModelCreating(modelBuilder);
         }
         public override int SaveChanges()
@@ -31,10 +47,10 @@ namespace Documentation.Data.DAL.Implementation
             {
                 if (ent.Entity is Base)
                 {
-                    ((Base)ent.Entity).Updator = Guid.Parse(HttpContext.Current.User.GetUserId());
+                    ((Base)ent.Entity).UpdatorId = Guid.Parse(HttpContext.Current.User.GetUserId());
                     if (ent.State == EntityState.Added)
                     {
-                        ((Base)ent.Entity).Creator = Guid.Parse(HttpContext.Current.User.GetUserId());
+                        ((Base)ent.Entity).CreatorId = Guid.Parse(HttpContext.Current.User.GetUserId());
                     }
                     else
                     {
