@@ -97,11 +97,11 @@ namespace Documentation.Data.DAL.Implementation
                     {
                         // (row as EntityBase).IsDeleted = true;
                         row.GetType().GetProperty("IsDeleted").SetValue(row, true);
-                        Update(row, key);
+                        return Update(row, key);
                     }
                     else
                     {
-                        DeletePhysical(row);
+                        return DeletePhysical(row);
                     }
                 }
                 return UnitofWork.SaveChanges();

@@ -235,9 +235,13 @@ namespace Documentation.Web.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(Guid id)
         {
+            var document = DocumentRepo.GetById(id);
             int result = DocumentRepo.Delete(id);
             if (result > 0)
+            {
+                System.IO.File.Delete(Server.MapPath("~/Documents") + id.ToString() + document.FileExtension);
                 return RedirectToAction("Index");
+            }
             else
             {
                 ModelState.AddModelError("", "Something went wrong, kindly try again later");
