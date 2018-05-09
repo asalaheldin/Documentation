@@ -10,61 +10,44 @@
 <p>
     @Html.ActionLink("Create New", "Create")
 </p>
+<input type="text" name="query" id="query" value="" placeholder="search text" />
+@Html.Editor("filterdate", "{0:M/d/yyyy}", new { htmlAttributes = new { @class = "datepicker", @placeholder = "filter date" } })
+@Html.DropDownList("type", new SelectList(Documentation.Web.Helper.Lookup.GetTypes(), "Id", "Name", null), "Select", new { htmlAttributes = new { } })
 <table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Subject)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Date)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.SerialNumber)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Remarks)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Type)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Creator)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Updator)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Subject)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Date)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.SerialNumber)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Remarks)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Type.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Creator.FullName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Updator.FullName)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
-            @Html.ActionLink("Details", "Details", new { id = item.Id }) |
-            @Html.ActionLink("Delete", "Delete", new { id = item.Id })
-        </td>
-    </tr>
-}
-
+    <thead>
+        <tr id="titles">
+            <th>
+                <a href="#" id="subject" class="order" data-dir="asc" data-field="subject">@Html.DisplayNameFor(model => model.Subject)</a>
+            </th>
+            <th>
+                <a href="#" id=" = date" class="order" data-dir="asc" data-field="date">@Html.DisplayNameFor(model => model.Date)</a>
+            </th>
+            <th>
+                <a href="#" id="serial" class="order" data-dir="asc" data-field="serial">@Html.DisplayNameFor(model => model.SerialNumber)</a>
+            </th>
+            <th>
+                <a href="#" id="remarks" class="order" data-dir="asc" data-field="remarks">@Html.DisplayNameFor(model => model.Remarks)</a>
+            </th>
+            <th>
+                <a href="#" id="type" class="order" data-dir="asc" data-field="type">@Html.DisplayNameFor(model => model.Type)</a>
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Creator)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Updator)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="tableBody">
+        @Html.Partial("_indexPartial", Model)
+    </tbody>
 </table>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/Scripts/custom.js")
+    @Scripts.Render("~/Scripts/search.js")
+}

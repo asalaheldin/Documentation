@@ -1,0 +1,39 @@
+﻿@model IEnumerable<Documentation.Data.Entities.Document>
+
+
+@foreach (var item in Model)
+{
+
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Subject)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Date)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SerialNumber)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Remarks)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Type.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Creator.FullName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Updator.FullName)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+            @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+            @Html.ActionLink("Delete", "Delete", new { id = item.Id }) |
+            @Html.ActionLink("Download", "Download", new { id = item.Id, fileName = item.FileName })
+        </td>
+    </tr>
+}
+
+
+

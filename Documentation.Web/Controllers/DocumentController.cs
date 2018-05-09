@@ -10,9 +10,11 @@ using System.Web.Mvc;
 using Documentation.Data.DAL.Implementation;
 using Documentation.Data.DAL.Intefraces;
 using Documentation.Data.Entities;
+using Documentation.Web.Helper;
 
 namespace Documentation.Web.Controllers
 {
+    [Authorize]
     public class DocumentController : Controller
     {
         private readonly Lazy<IRepository<Document>> _documentRepo;
@@ -24,9 +26,62 @@ namespace Documentation.Web.Controllers
         private IRepository<Document> DocumentRepo => _documentRepo.Value;
 
         // GET: Document
-        public ActionResult Index()
+        public ActionResult Index(int? type = null, DateTime? date = null, string query = "", string orderByField = "", string orderDir = "asc", int page = 1, int pageSize = 10, bool isPartial = false)
         {
-            return View(DocumentRepo.GetAll(navigationProperties: new System.Linq.Expressions.Expression<Func<Document, object>>[] { x => x.Type, x => x.Updator, x => x.Creator }));
+            IQueryable<Document> model = null;
+
+            model = DocumentRepo.GetAll(navigationProperties: new System.Linq.Expressions.Expression<Func<Document, object>>[] { x => x.Type, x => x.Updator, x => x.Creator });
+
+            //Apply Search
+            if (!string.IsNullOrEmpty(query))
+            {
+                model = model.Where(x => x.Subject.Trim().ToLower().Contains(query.Trim().ToLower())
+                || x.SerialNumber.Trim().ToLower().Contains(query.Trim().ToLower())
+                || x.Remarks.Trim().ToLower().Contains(query.Trim().ToLower())
+                );
+            }
+            //Apply Search By Date
+            if (date != null)
+            {
+                model = model.Where(x => DbFunctions.TruncateTime(x.Date) == DbFunctions.TruncateTime(date.Value));
+            }
+            //Apply Type Search
+            if (type != null)
+            {
+                model = model.Where(x => x.TypeId == type.Value);
+            }
+
+            //Apply Order By
+            switch (orderByField)
+            {
+                case "type":
+                    model = orderDir == "asc" ? model.OrderBy(x => x.TypeId) : model.OrderByDescending(x => x.TypeId);
+                    break;
+                case "remarks":
+                    model = orderDir == "asc" ? model.OrderBy(x => x.Remarks) : model.OrderByDescending(x => x.Remarks);
+                    break;
+                case "serial":
+                    model = orderDir == "asc" ? model.OrderBy(x => x.SerialNumber) : model.OrderByDescending(x => x.SerialNumber);
+                    break;
+                case "date":
+                    model = orderDir == "asc" ? model.OrderBy(x => x.Date) : model.OrderByDescending(x => x.Date);
+                    break;
+                case "subject":
+                    model = orderDir == "asc" ? model.OrderBy(x => x.Subject) : model.OrderByDescending(x => x.Subject);
+                    break;
+                default:
+                    model = orderDir == "asc" ? model.OrderBy(x => x.CreatedOn) : model.OrderByDescending(x => x.CreatedOn);
+                    break;
+            }
+
+            model = model.Skip((page - 1) * pageSize).Take(pageSize);
+
+            if (isPartial)
+            {
+                var _partialView = WebExtensions.RenderViewToString(this.ControllerContext, "_indexPartial", model);
+                return Json(new { status = "success", partialView = _partialView }, JsonRequestBehavior.AllowGet);
+            }
+            return View(model);
         }
 
         // GET: Document/Details/5
@@ -188,6 +243,13 @@ namespace Documentation.Web.Controllers
                 ModelState.AddModelError("", "Something went wrong, kindly try again later");
                 return View();
             }
+        }
+        public FileResult Download(Guid id, string fileName)
+        {
+            string path = Path.Combine(Server.MapPath("~/Documents"), id.ToString() + Path.GetExtension(fileName));
+            byte[] fileBytes = System.IO.File.ReadAllBytes(path);
+            return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
+
         }
 
         protected override void Dispose(bool disposing)
